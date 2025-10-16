@@ -42,8 +42,9 @@ class HLGaussLoss(nn.Module):
         self.num_bins = num_bins
         bin_width = (max_value - min_value) / num_bins
         self.sigma = sigma if sigma is not None else 0.75 * bin_width
-        self.support = torch.linspace(
-            min_value, max_value, num_bins + 1, dtype=torch.float32
+        self.register_buffer(
+            'support',
+            torch.linspace(min_value, max_value, num_bins + 1, dtype=torch.float32)
         )
 
     def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -55,7 +56,7 @@ class HLGaussLoss(nn.Module):
         
         cdf_evals = torch.special.erf(
             (self.support - target.unsqueeze(-1)) /
-            (torch.sqrt(torch.tensor(2.0)) * self.sigma)
+            (torch.sqrt(torch.tensor(2.0, device=target.device, dtype=target.dtype)) * self.sigma)
         )
         z = cdf_evals[..., -1] - cdf_evals[..., 0]
         bin_probs = cdf_evals[..., 1:] - cdf_evals[..., :-1]
