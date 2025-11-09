@@ -67,7 +67,8 @@ def collate_rollout(rollouts: Iterable[ActorRollout]) -> LearnerBatch:
         raise ValueError("Something happened there are no rollouts")
     
     obs = th.stack([r.observations[:-1] for r in rollouts], dim=1)
-    bootstrap_obs = th.stack([r.observations[:-1] for r in rollouts], dim=0)
+    bootstrap_obs = th.stack([r.observations[-1] for r in rollouts], dim=0)
+
     actions = th.stack([r.actions for r in rollouts ], dim=1)
     rewards = th.stack([r.rewards for r in rollouts ], dim=1)
     dones = th.stack([r.dones for r in rollouts ], dim=1)
